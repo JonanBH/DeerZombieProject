@@ -1,0 +1,21 @@
+using System.Collections;
+using System.Collections.Generic;
+using UnityEngine;
+
+namespace DeerZombieProject
+{
+    public interface #SCRIPTNAME#
+    {
+        #region Events
+
+        #endregion
+
+        #region Methods
+
+        #endregion
+
+        #region Nested Types
+
+        #endregion
+    }
+}
