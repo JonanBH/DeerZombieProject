@@ -26,6 +26,8 @@ namespace DeerZombieProject
         private GameObject adventureLobbyGameObject;
         [SerializeField]
         private GameObject gameRoomGameObject;
+        [SerializeField]
+        private UIRoomHandler roomHandler;
         #endregion
 
         #region Events and Delegates
@@ -36,6 +38,12 @@ namespace DeerZombieProject
         public override void OnCreatedRoom()
         {
             base.OnCreatedRoom();
+            ChangeToGameRoom();
+        }
+
+        public override void OnJoinedRoom()
+        {
+            base.OnJoinedRoom();
             ChangeToGameRoom();
         }
         #endregion
@@ -77,6 +85,8 @@ namespace DeerZombieProject
             mainMenuGameObject.SetActive(false);
             adventureLobbyGameObject.SetActive(false);
             gameRoomGameObject.SetActive(true);
+
+            roomHandler.UpdatePlayerSlots();
         }
 
         public void CreateRoom()
@@ -88,6 +98,19 @@ namespace DeerZombieProject
             options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
             options.CustomRoomProperties.Add("levelId", 1);
             PhotonNetwork.CreateRoom("test room", options);
+        }
+
+        public void JoinQuickGame()
+        {
+            RoomOptions options = new RoomOptions();
+
+            options.MaxPlayers = 4;
+            options.IsVisible = true;
+            options.IsOpen = true;
+            options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
+            options.CustomRoomProperties.Add("levelId", 1);
+
+            PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: options);
         }
         #endregion
 
