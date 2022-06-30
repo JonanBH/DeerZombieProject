@@ -5,6 +5,8 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
+using Cinemachine;
+
 namespace DeerZombieProject
 {
     public class PlayerSpawnerManager : MonoBehaviour
@@ -22,6 +24,8 @@ namespace DeerZombieProject
         private List<Transform> spawnPoints;
         [SerializeField]
         private GameObject playerPrefab;
+        [SerializeField]
+        private CinemachineVirtualCamera virtualCamera;
         #endregion
 
         #region Events and Delegates
@@ -42,7 +46,8 @@ namespace DeerZombieProject
         void Start()
         {
             // Spawn player avatar
-            PhotonNetwork.Instantiate(playerPrefab.name, spawnPoints[Random.Range(0, spawnPoints.Count)].position, Quaternion.identity);
+            GameObject character = PhotonNetwork.Instantiate(playerPrefab.name, spawnPoints[Random.Range(0, spawnPoints.Count)].position, Quaternion.identity);
+            virtualCamera.Follow = character.transform;
         }
 
         #endregion
