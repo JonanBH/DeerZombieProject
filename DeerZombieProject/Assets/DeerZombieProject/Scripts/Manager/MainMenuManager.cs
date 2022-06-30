@@ -95,8 +95,7 @@ namespace DeerZombieProject
             adventureLobbyGameObject.SetActive(false);
             gameRoomGameObject.SetActive(true);
 
-            roomHandler.UpdatePlayerSlots();
-            roomHandler.UpdateRoomName();
+            roomHandler.UpdateRoomDetails();
         }
 
         public void CreateRoom()

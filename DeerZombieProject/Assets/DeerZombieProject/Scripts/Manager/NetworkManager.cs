@@ -6,6 +6,8 @@ using Photon.Pun;
 using Photon.Realtime;
 
 using System;
+using UnityEngine.SceneManagement;
+
 namespace DeerZombieProject
 {
     public class NetworkManager : MonoBehaviourPunCallbacks
@@ -23,6 +25,7 @@ namespace DeerZombieProject
         #endregion
 
         #region Fields
+        private int levelBuildIndex = 3;
         #endregion
 
         #region Events and Delegates
@@ -46,6 +49,7 @@ namespace DeerZombieProject
             }
 
             instance = this;
+            PhotonNetwork.AutomaticallySyncScene = true;
             DontDestroyOnLoad(gameObject);
         }
 
@@ -99,6 +103,13 @@ namespace DeerZombieProject
             }
 
             PhotonNetwork.LeaveRoom();
+        }
+
+        public void StartGame()
+        {
+            if (!PhotonNetwork.IsMasterClient) { return; }
+
+            SceneManager.LoadScene(levelBuildIndex);
         }
         #endregion
 
