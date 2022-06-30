@@ -115,6 +115,22 @@ MonoBehaviour:
       m_Calls: []
     m_ActionId: 590ae689-6c0d-4014-87c2-95a6c1a020a9
     m_ActionName: Player/Move
+  - m_PersistentCalls:
+      m_Calls:
+      - m_Target: {fileID: 2189740069583382884}
+        m_TargetAssemblyTypeName: DeerZombieProject.PlayerCharacterControler, Assembly-CSharp
+        m_MethodName: HandleShootInput
+        m_Mode: 0
+        m_Arguments:
+          m_ObjectArgument: {fileID: 0}
+          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
+          m_IntArgument: 0
+          m_FloatArgument: 0
+          m_StringArgument: 
+          m_BoolArgument: 0
+        m_CallState: 2
+    m_ActionId: 7e5f74f4-1c6e-4cf1-b0e4-72d8f70533a0
+    m_ActionName: Player/Shoot
   m_NeverAutoSwitchControlSchemes: 0
   m_DefaultControlScheme: AndroidVirtualGamepad
   m_DefaultActionMap: Player
@@ -177,6 +193,9 @@ MonoBehaviour:
   maxSpeed: 1
   accelerationMod: 4
   minSpeedToMove: 0.1
+  enemyMask:
+    serializedVersion: 2
+    m_Bits: 128
 --- !u!1001 &2189740068505453468
 PrefabInstance:
   m_ObjectHideFlags: 0

@@ -3,6 +3,8 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.InputSystem.Interactions;
+using static UnityEngine.InputSystem.InputAction;
 
 namespace DeerZombieProject
 {
@@ -29,6 +31,10 @@ namespace DeerZombieProject
         private float accelerationMod = 0.5f;
         [SerializeField]
         private float minSpeedToMove = 0.1f;
+        [SerializeField]
+        private LayerMask enemyMask;
+        [SerializeField]
+        private IDamageable damageTarget;
 
         private Vector3 moveVelocity = Vector3.zero;
         private Camera currentCamera;
@@ -81,6 +87,26 @@ namespace DeerZombieProject
 
         #region Public Methods
 
+        public void HandleShootInput(CallbackContext context)
+        {
+            if (!photonView.IsMine)
+            {
+                return;
+            }
+
+            if (context.interaction is TapInteraction)
+            {
+                if (damageTarget == null)
+                {
+                    FindTarget();
+                }
+
+                if (damageTarget != null)
+                {
+                    photonView.RPC(nameof(RPCDoDamage), RpcTarget.MasterClient);
+                }
+            }
+        }
         #endregion
 
         #region Internal Methods
@@ -105,6 +131,56 @@ namespace DeerZombieProject
 
             moveVelocity = Vector3.Lerp(moveVelocity, moveDirection * maxSpeed, accelerationMod * Time.deltaTime);
 
+        }
+
+        private void FindTarget()
+        {
+            photonView.RPC(nameof(CmdFindTarget), RpcTarget.MasterClient, transform.position, 20f, photonView.ViewID);
+        }
+
+        [PunRPC]
+        private void CmdFindTarget(Vector3 position, float radius, int requestView)
+        {
+            Collider[] enemies = Physics.OverlapSphere(transform.position, 20, enemyMask);
+            if (enemies.Length == 0)
+            {
+                return;
+            }
+
+            Collider target = enemies[0];
+
+            foreach (Collider enemy in enemies)
+            {
+                if(Vector3.Distance(enemy.transform.position, position) < Vector3.Distance(target.transform.position, position))
+                {
+                    target = enemy;
+                }
+            }
+
+            damageTarget = target.gameObject.GetComponent<IDamageable>();
+            photonView.RPC(nameof(RPCSetTarget), RpcTarget.Others, target.gameObject.GetComponent<PhotonView>().ViewID, requestView);
+        }
+
+        [PunRPC]
+        private void RPCSetTarget(int targetId, int requestView)
+        {
+            if(photonView.ViewID != requestView)
+            {
+                return;
+            }
+
+            PhotonView target = PhotonView.Find(targetId);
+
+            if (target)
+            {
+                damageTarget = target.gameObject.GetComponent<IDamageable>();
+            }
+        }
+
+        [PunRPC]
+        private void RPCDoDamage()
+        {
+            damageTarget.TakeDamage(1);
         }
         #endregion
 
