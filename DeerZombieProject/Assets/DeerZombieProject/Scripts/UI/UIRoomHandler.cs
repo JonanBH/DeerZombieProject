@@ -5,6 +5,8 @@ using UnityEngine;
 using Photon.Pun;
 using Photon.Realtime;
 
+using TMPro;
+
 namespace DeerZombieProject
 {
     public class UIRoomHandler : MonoBehaviourPunCallbacks
@@ -22,6 +24,8 @@ namespace DeerZombieProject
         private RectTransform playersParentRectTransform;
         [SerializeField]
         private GameObject playerInfoPrefab;
+        [SerializeField]
+        private TMP_Text txRoomName;
 
         #endregion
 
@@ -80,6 +84,16 @@ namespace DeerZombieProject
 
                 playerInfo.UpdateNickname(keyValue.Value.NickName);
             }
+        }
+
+        public void UpdateRoomName()
+        {
+            txRoomName.text = PhotonNetwork.CurrentRoom.Name;
+        }
+
+        public void LeaveRoom()
+        {
+            NetworkManager.Instance.LeaveRoom();
         }
         #endregion
 

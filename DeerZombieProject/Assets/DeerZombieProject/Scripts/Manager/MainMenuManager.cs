@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Photon.Pun;
-using Photon.Realtime;
 
 namespace DeerZombieProject
 {
@@ -46,6 +45,12 @@ namespace DeerZombieProject
             base.OnJoinedRoom();
             ChangeToGameRoom();
         }
+
+        public override void OnLeftRoom()
+        {
+            base.OnLeftRoom();
+            ChangeToAdventureLobby();
+        }
         #endregion
 
         #region Constructors
@@ -58,6 +63,10 @@ namespace DeerZombieProject
         void Start()
         {
             uiPlayerHeader.UpdatePlayerName(PhotonNetwork.LocalPlayer.NickName);
+            if(PhotonNetwork.CurrentRoom != null)
+            {
+                ChangeToGameRoom();
+            }
         }
 
         #endregion
@@ -87,30 +96,17 @@ namespace DeerZombieProject
             gameRoomGameObject.SetActive(true);
 
             roomHandler.UpdatePlayerSlots();
+            roomHandler.UpdateRoomName();
         }
 
         public void CreateRoom()
         {
-            RoomOptions options = new RoomOptions();
-            options.MaxPlayers = 4;
-            options.IsVisible = true;
-            options.IsOpen = true;
-            options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
-            options.CustomRoomProperties.Add("levelId", 1);
-            PhotonNetwork.CreateRoom("test room", options);
+            NetworkManager.Instance.CreateRoom();
         }
 
         public void JoinQuickGame()
         {
-            RoomOptions options = new RoomOptions();
-
-            options.MaxPlayers = 4;
-            options.IsVisible = true;
-            options.IsOpen = true;
-            options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
-            options.CustomRoomProperties.Add("levelId", 1);
-
-            PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: options);
+            NetworkManager.Instance.JoinQuickGame();
         }
         #endregion
 
