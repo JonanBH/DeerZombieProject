@@ -62,6 +62,44 @@ namespace DeerZombieProject
         {
             PhotonNetwork.LocalPlayer.NickName = name;
         }
+
+        public void CreateRoom()
+        {
+            RoomOptions options = new RoomOptions();
+            string roomName = "Room " + (PhotonNetwork.CountOfRooms + 1).ToString();
+
+            options.MaxPlayers = 4;
+            options.IsVisible = true;
+            options.IsOpen = true;
+            options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
+            options.CustomRoomProperties.Add("levelId", 1);
+
+            PhotonNetwork.CreateRoom(roomName, options);
+        }
+
+        public void JoinQuickGame()
+        {
+            RoomOptions options = new RoomOptions();
+            string roomName = "Room " + (PhotonNetwork.CountOfRooms + 1).ToString();
+
+            options.MaxPlayers = 4;
+            options.IsVisible = true;
+            options.IsOpen = true;
+            options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
+            options.CustomRoomProperties.Add("levelId", 1);
+
+            PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: options, roomName: roomName);
+        }
+
+        public void LeaveRoom()
+        {
+            if(PhotonNetwork.CurrentRoom == null)
+            {
+                return;
+            }
+
+            PhotonNetwork.LeaveRoom();
+        }
         #endregion
 
         #region Internal Methods
