@@ -215,6 +215,7 @@ namespace DeerZombieProject
                 case ZombieStates.DEAD:
                     timer = 5;
                     animator.SetTrigger("Died");
+                    navAgent.SetDestination(transform.position);
                     break;
             }
         }
