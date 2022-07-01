@@ -1,4 +1,5 @@
 using Photon.Pun;
+using Photon.Realtime;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -8,10 +9,11 @@ using static UnityEngine.InputSystem.InputAction;
 
 namespace DeerZombieProject
 {
-    public class PlayerCharacterControler : MonoBehaviour
+    public class PlayerCharacterControler : MonoBehaviour, IDamageable
     {
         #region Constant Fields
-
+        private const string CURRENT_HEALTH_KEY = "currentHealth";
+        private const string CURRENT_KILLS_KEY = "kills";
         #endregion
 
         #region Static Fields
@@ -36,6 +38,11 @@ namespace DeerZombieProject
         [SerializeField]
         private IDamageable damageTarget;
 
+        [SerializeField]
+        private float maxHealth = 100;
+        [SerializeField]
+        private float currentHealth;
+
         private Vector3 moveVelocity = Vector3.zero;
         private Camera currentCamera;
         #endregion
@@ -45,7 +52,7 @@ namespace DeerZombieProject
         #endregion
 
         #region Callbacks
-
+        
         #endregion
 
         #region Constructors
@@ -57,8 +64,8 @@ namespace DeerZombieProject
         // Start is called before the first frame update
         private void Start()
         {
+            currentHealth = maxHealth;
             currentCamera = Camera.main;
-
         }
 
         // Update is called once per frame
@@ -107,6 +114,18 @@ namespace DeerZombieProject
                 }
             }
         }
+
+        public void TakeDamage(float damage)
+        {
+            Debug.Log("Player took damage");
+            currentHealth -= damage;
+            photonView.Owner.CustomProperties[CURRENT_HEALTH_KEY] = currentHealth;
+        }
+
+        public Transform GetAimPosition()
+        {
+            return transform;
+        }
         #endregion
 
         #region Internal Methods
@@ -118,6 +137,23 @@ namespace DeerZombieProject
         #endregion
 
         #region Private Methods
+        private void Init()
+        {
+            Player myPlayer = PhotonNetwork.LocalPlayer;
+
+            if (!myPlayer.CustomProperties.ContainsKey(CURRENT_HEALTH_KEY))
+            {
+                myPlayer.CustomProperties.Add(CURRENT_HEALTH_KEY, currentHealth);
+            }
+            if (!myPlayer.CustomProperties.ContainsKey(CURRENT_KILLS_KEY))
+            {
+                myPlayer.CustomProperties.Add(CURRENT_KILLS_KEY, 0);
+            }
+
+            myPlayer.CustomProperties[CURRENT_HEALTH_KEY] =  currentHealth;
+            myPlayer.CustomProperties[CURRENT_KILLS_KEY] = 0;
+        }
+
         private void GetInputs()
         {
             Vector2 moveInput = playerInputs.actions["Move"].ReadValue<Vector2>();
@@ -180,6 +216,9 @@ namespace DeerZombieProject
         [PunRPC]
         private void RPCDoDamage()
         {
+            if (damageTarget is null)
+                return;
+
             damageTarget.TakeDamage(1);
         }
         #endregion
