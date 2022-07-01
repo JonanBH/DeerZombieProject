@@ -32,6 +32,11 @@ namespace DeerZombieProject
         #endregion
 
         #region Callbacks
+
+        public override void OnJoinedRoom()
+        {
+            PreparePlayerCustomProperties();
+        }
         #endregion
 
         #region Constructors
@@ -50,6 +55,7 @@ namespace DeerZombieProject
 
             instance = this;
             PhotonNetwork.AutomaticallySyncScene = true;
+            Init();
             DontDestroyOnLoad(gameObject);
         }
 
@@ -111,6 +117,11 @@ namespace DeerZombieProject
 
             SceneManager.LoadScene(levelBuildIndex);
         }
+
+        public void Init()
+        {
+            PreparePlayerCustomProperties();
+        }
         #endregion
 
         #region Internal Methods
@@ -122,7 +133,10 @@ namespace DeerZombieProject
         #endregion
 
         #region Private Methods
-
+        private void PreparePlayerCustomProperties()
+        {
+            PhotonNetwork.LocalPlayer.CustomProperties = new ExitGames.Client.Photon.Hashtable();
+        }
         #endregion
 
         #region Nested Types

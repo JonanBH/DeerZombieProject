@@ -45,7 +45,7 @@ GameObject:
   - component: {fileID: 2189740069583382874}
   - component: {fileID: 2189740069583382885}
   - component: {fileID: 2189740069583382884}
-  m_Layer: 0
+  m_Layer: 8
   m_Name: PlayerCharacter
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -196,6 +196,8 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
+  maxHealth: 100
+  currentHealth: 0
 --- !u!1001 &2189740068505453468
 PrefabInstance:
   m_ObjectHideFlags: 0
