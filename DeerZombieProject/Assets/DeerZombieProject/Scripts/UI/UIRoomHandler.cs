@@ -26,7 +26,10 @@ namespace DeerZombieProject
         private GameObject playerInfoPrefab;
         [SerializeField]
         private TMP_Text txRoomName;
-
+        [SerializeField]
+        private GameObject btnReady;
+        [SerializeField]
+        private GameObject btnStartGame;
         #endregion
 
         #region Events and Delegates
@@ -91,9 +94,23 @@ namespace DeerZombieProject
             txRoomName.text = PhotonNetwork.CurrentRoom.Name;
         }
 
+        public void UpdateRoomDetails()
+        {
+            UpdatePlayerSlots();
+            UpdateRoomName();
+
+            btnReady.SetActive(false);
+            btnStartGame.SetActive(PhotonNetwork.IsMasterClient);
+        }
+
         public void LeaveRoom()
         {
             NetworkManager.Instance.LeaveRoom();
+        }
+
+        public void StartGame()
+        {
+            NetworkManager.Instance.StartGame();
         }
         #endregion
 

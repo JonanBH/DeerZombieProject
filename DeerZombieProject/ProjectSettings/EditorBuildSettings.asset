@@ -14,4 +14,7 @@ EditorBuildSettings:
   - enabled: 1
     path: Assets/DeerZombieProject/Scenes/MainMenu.unity
     guid: 3e451c40b044c5147988bd107a7236f2
+  - enabled: 1
+    path: Assets/DeerZombieProject/Scenes/BaseLevelScene.unity
+    guid: 896bc8556d045844b8c4145e3e71fd15
   m_configObjects: {}
