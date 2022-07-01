@@ -42,6 +42,8 @@ namespace DeerZombieProject
         private float maxHealth = 100;
         [SerializeField]
         private float currentHealth;
+        [SerializeField]
+        private Animator animator;
 
         private Vector3 moveVelocity = Vector3.zero;
         private Camera currentCamera;
@@ -162,11 +164,13 @@ namespace DeerZombieProject
             if (moveInput.Equals(Vector2.zero) && moveVelocity.magnitude <= minSpeedToMove)
             {
                 moveVelocity = Vector3.zero;
-                return;
+            }
+            else{
+                moveVelocity = Vector3.Lerp(moveVelocity, moveDirection * maxSpeed, accelerationMod * Time.deltaTime);
             }
 
-            moveVelocity = Vector3.Lerp(moveVelocity, moveDirection * maxSpeed, accelerationMod * Time.deltaTime);
-
+            animator.SetBool("IsMoving", moveVelocity != Vector3.zero);
+            animator.SetBool("IsRunning", moveVelocity.magnitude > maxSpeed / 2);
         }
 
         private void FindTarget()

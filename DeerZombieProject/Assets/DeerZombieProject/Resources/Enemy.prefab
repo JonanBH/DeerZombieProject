@@ -73,8 +73,10 @@ GameObject:
   - component: {fileID: 6016002493523250236}
   - component: {fileID: -8900140937596788645}
   - component: {fileID: -6370511521919405873}
-  - component: {fileID: 5232084354332164425}
+  - component: {fileID: 9065129734805955475}
   - component: {fileID: 7965534133073394948}
+  - component: {fileID: 7499953645610948508}
+  - component: {fileID: 5232084354332164425}
   m_Layer: 7
   m_Name: Enemy
   m_TagString: Untagged
@@ -131,6 +133,7 @@ MonoBehaviour:
   observableSearch: 2
   ObservedComponents:
   - {fileID: -6370511521919405873}
+  - {fileID: 9065129734805955475}
   sceneViewId: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -150,7 +153,7 @@ MonoBehaviour:
   m_SynchronizeRotation: 1
   m_SynchronizeScale: 0
   m_UseLocal: 1
---- !u!114 &5232084354332164425
+--- !u!114 &9065129734805955475
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -159,19 +162,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 5232084354332164426}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 06447e4f9a7a0fe42bc23928f9877e18, type: 3}
+  m_Script: {fileID: 11500000, guid: 9b8c4a61274f60b4ea5fb4299cfdbf14, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  aimPosition: {fileID: 5232084353277857406}
-  navAgent: {fileID: 7965534133073394948}
-  targetPlayer: {fileID: 0}
-  detectionRadius: 30
-  attackRange: 3
-  triggerAttackRange: 1.5
-  targetLayers:
-    serializedVersion: 2
-    m_Bits: 256
-  delayAfterAttack: 1
+  ShowLayerWeightsInspector: 1
+  ShowParameterInspector: 1
+  m_SynchronizeParameters: []
+  m_SynchronizeLayers: []
 --- !u!195 &7965534133073394948
 NavMeshAgent:
   m_ObjectHideFlags: 0
@@ -194,6 +191,48 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
+--- !u!95 &7499953645610948508
+Animator:
+  serializedVersion: 3
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5232084354332164426}
+  m_Enabled: 1
+  m_Avatar: {fileID: 9000000, guid: d55a3dafe23105e409ee70d6605cbd49, type: 3}
+  m_Controller: {fileID: 9100000, guid: 2730f90074129204dbafce413f87905b, type: 2}
+  m_CullingMode: 0
+  m_UpdateMode: 0
+  m_ApplyRootMotion: 0
+  m_LinearVelocityBlending: 0
+  m_WarningMessage: 
+  m_HasTransformHierarchy: 1
+  m_AllowConstantClipSamplingOptimization: 1
+  m_KeepAnimatorControllerStateOnDisable: 0
+--- !u!114 &5232084354332164425
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 5232084354332164426}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 06447e4f9a7a0fe42bc23928f9877e18, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  aimPosition: {fileID: 5232084353277857406}
+  navAgent: {fileID: 7965534133073394948}
+  targetPlayer: {fileID: 0}
+  detectionRadius: 30
+  attackRange: 3
+  triggerAttackRange: 1.5
+  targetLayers:
+    serializedVersion: 2
+    m_Bits: 256
+  delayAfterAttack: 1
+  animator: {fileID: 7499953645610948508}
 --- !u!1001 &5232084353644821914
 PrefabInstance:
   m_ObjectHideFlags: 0
