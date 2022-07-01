@@ -61,6 +61,9 @@ namespace DeerZombieProject
         [SerializeField]
         private int mainMenuSceneIndex = 2;
 
+        [SerializeField]
+        private List<GameObject> loadingGears;
+
         private FacebookHandler fbHandler;
         private PlayfabHandler playfabHandler;
         #endregion
@@ -170,6 +173,7 @@ namespace DeerZombieProject
         public void LoginUsingFacebook()
         {
             fbHandler.Login();
+            SetInputsInteractable(false);
         }
 
         public void UpdateDisplayName()
@@ -233,6 +237,11 @@ namespace DeerZombieProject
 
             ifNewDisplayName.interactable = state;
             btnUpdateDisplayName.interactable = state;
+
+            foreach(GameObject gear in loadingGears)
+            {
+                gear.SetActive(!state);
+            }
         }
 
         private void RequestDisplayName()
