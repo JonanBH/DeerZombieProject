@@ -190,6 +190,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: e6a62bcf656c7bd46b01601eca5ecbd6, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CURRENT_HEALTH_KEY: {fileID: 11400000, guid: 23a79fde6d042c44f9c5dbf765e8105a, type: 2}
+  MAX_HEALTH_KEY: {fileID: 11400000, guid: 1bec245d6aafb144684257d662931922, type: 2}
+  CURRENT_KILLS_KEY: {fileID: 11400000, guid: 7ff6862b34d327449ab97665800c88b0, type: 2}
+  SCORE_KEY: {fileID: 11400000, guid: 6522779afb0155240bfd6e8a40e7a70a, type: 2}
   playerInputs: {fileID: 2189740069583382875}
   characterController: {fileID: 2189740069583382872}
   photonView: {fileID: 2189740069583382874}
@@ -199,8 +203,9 @@ MonoBehaviour:
   enemyMask:
     serializedVersion: 2
     m_Bits: 128
-  maxHealth: 100
-  currentHealth: 0
+  damageTarget: {fileID: 0}
+  maxHealth: 10
+  currentHealth: 10
   animator: {fileID: 6853591878294785072}
 --- !u!95 &6853591878294785072
 Animator:

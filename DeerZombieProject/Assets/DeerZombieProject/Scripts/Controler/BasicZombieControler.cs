@@ -35,6 +35,8 @@ namespace DeerZombieProject
         private float delayAfterAttack = 1;
         [SerializeField]
         private Animator animator;
+        [SerializeField]
+        private int scoreValue = 10;
         private enum ZombieStates
         {
             IDLE, FOLLOWING, ATTACKING, RECOVER, DEAD
@@ -44,10 +46,22 @@ namespace DeerZombieProject
         private float currentHealth = 10;
         private ZombieStates currentState = ZombieStates.IDLE;
         private float timer = 0;
+        private bool isAlive = true;
+        public bool IsAlive
+        {
+            get
+            {
+                return isAlive;
+            }
+            private set
+            {
+                isAlive = value;
+            }
+        }
         #endregion
 
         #region Events and Delegates
-
+        public System.Action<BasicZombieControler> OnDeath;
         #endregion
 
         #region Callbacks
@@ -59,6 +73,11 @@ namespace DeerZombieProject
         #endregion
 
         #region LifeCycle Methods
+
+        void Start()
+        {
+            currentHealth = maxHealth;
+        }
 
         // Update is called once per frame
         void Update()
@@ -96,7 +115,7 @@ namespace DeerZombieProject
             return aimPosition;
         }
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(float damage, GameObject attacker)
         {
             if (!PhotonNetwork.IsMasterClient)
                 return;
@@ -107,8 +126,9 @@ namespace DeerZombieProject
             if(currentHealth <= 0)
             {
                 Debug.Log("died");
+                attacker.GetComponent<PlayerCharacterControler>().AddScore(scoreValue);
                 //PhotonNetwork.Destroy(gameObject);
-                ChangeState(ZombieStates.DEAD);
+                Die();
             }
         }
         #endregion
@@ -220,7 +240,19 @@ namespace DeerZombieProject
             }
         }
 
+        private void Die()
+        {
+            ChangeState(ZombieStates.DEAD);
+            OnDeath?.Invoke(this);
 
+            GetComponent<PhotonView>().RPC(nameof(RPCDie), RpcTarget.All);
+        }
+
+        [PunRPC]
+        private void RPCDie()
+        {
+            IsAlive = false;
+        }
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.blue;

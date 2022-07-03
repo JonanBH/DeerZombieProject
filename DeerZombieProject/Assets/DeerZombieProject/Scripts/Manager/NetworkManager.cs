@@ -13,7 +13,6 @@ namespace DeerZombieProject
     public class NetworkManager : MonoBehaviourPunCallbacks
     {
         #region Constant Fields
-
         #endregion
 
         #region Static Fields
@@ -25,10 +24,19 @@ namespace DeerZombieProject
         #endregion
 
         #region Fields
+        public SString CURRENT_HEALTH_KEY;
+        public SString MAX_HEALTH_KEY;
+        public SString CURRENT_KILLS_KEY;
+        public SString CURRENT_SCORE_KEY;
+        public SString LEVEL_ID_KEY;
         private int levelBuildIndex = 3;
         #endregion
 
         #region Events and Delegates
+        public Action<int> OnMaxHealthChanged;
+        public Action<int> OnCurrentHealthChanged;
+        public Action<int> OnScoreChanged;
+        public Action<int> OnKillsChanged;
         #endregion
 
         #region Callbacks
@@ -36,6 +44,31 @@ namespace DeerZombieProject
         public override void OnJoinedRoom()
         {
             PreparePlayerCustomProperties();
+        }
+
+        public override void OnPlayerPropertiesUpdate(Player targetPlayer, ExitGames.Client.Photon.Hashtable changedProps)
+        {
+            if(targetPlayer != PhotonNetwork.LocalPlayer)
+            {
+                return;
+            }
+
+            if (changedProps.ContainsKey(CURRENT_HEALTH_KEY.value))
+            {
+                OnCurrentHealthChanged?.Invoke((int)changedProps[CURRENT_HEALTH_KEY.value]);
+            }
+            if (changedProps.ContainsKey(MAX_HEALTH_KEY.value))
+            {
+                OnMaxHealthChanged?.Invoke((int)changedProps[MAX_HEALTH_KEY.value]);
+            }
+            if (changedProps.ContainsKey(CURRENT_SCORE_KEY.value))
+            {
+                OnScoreChanged?.Invoke((int)changedProps[CURRENT_SCORE_KEY.value]);
+            }
+            if (changedProps.ContainsKey(CURRENT_KILLS_KEY.value))
+            {
+                OnKillsChanged?.Invoke((int)changedProps[CURRENT_KILLS_KEY.value]);
+            }
         }
         #endregion
 
@@ -54,7 +87,6 @@ namespace DeerZombieProject
             }
 
             instance = this;
-            PhotonNetwork.AutomaticallySyncScene = true;
             Init();
             DontDestroyOnLoad(gameObject);
         }
@@ -82,7 +114,7 @@ namespace DeerZombieProject
             options.IsVisible = true;
             options.IsOpen = true;
             options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
-            options.CustomRoomProperties.Add("levelId", 1);
+            options.CustomRoomProperties.Add(LEVEL_ID_KEY.value, 1);
 
             PhotonNetwork.CreateRoom(roomName, options);
         }
@@ -96,7 +128,7 @@ namespace DeerZombieProject
             options.IsVisible = true;
             options.IsOpen = true;
             options.CustomRoomProperties = new ExitGames.Client.Photon.Hashtable();
-            options.CustomRoomProperties.Add("levelId", 1);
+            options.CustomRoomProperties.Add(LEVEL_ID_KEY.value, 1);
 
             PhotonNetwork.JoinRandomOrCreateRoom(roomOptions: options, roomName: roomName);
         }
@@ -120,6 +152,8 @@ namespace DeerZombieProject
 
         public void Init()
         {
+            PhotonNetwork.AutomaticallySyncScene = true;
+            PhotonNetwork.LocalPlayer.CustomProperties = new ExitGames.Client.Photon.Hashtable();
             PreparePlayerCustomProperties();
         }
         #endregion
@@ -135,7 +169,14 @@ namespace DeerZombieProject
         #region Private Methods
         private void PreparePlayerCustomProperties()
         {
-            PhotonNetwork.LocalPlayer.CustomProperties = new ExitGames.Client.Photon.Hashtable();
+            ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable();
+
+            customProperties.Add(CURRENT_HEALTH_KEY.value, 10);
+            customProperties.Add(MAX_HEALTH_KEY.value, 10);
+            customProperties.Add(CURRENT_KILLS_KEY.value, 0);
+            customProperties.Add(CURRENT_SCORE_KEY.value, 0);
+
+            PhotonNetwork.LocalPlayer.SetCustomProperties(customProperties);
         }
         #endregion
 

@@ -233,6 +233,7 @@ MonoBehaviour:
     m_Bits: 256
   delayAfterAttack: 1
   animator: {fileID: 7499953645610948508}
+  scoreValue: 10
 --- !u!1001 &5232084353644821914
 PrefabInstance:
   m_ObjectHideFlags: 0

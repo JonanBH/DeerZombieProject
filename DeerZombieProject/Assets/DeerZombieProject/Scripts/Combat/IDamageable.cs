@@ -15,8 +15,9 @@ namespace DeerZombieProject
         #endregion
 
         #region Methods
-        public void TakeDamage(float damage);
+        public void TakeDamage(float damage, GameObject attacker);
         public Transform GetAimPosition();
+
         #endregion
 
         #region Nested Types
