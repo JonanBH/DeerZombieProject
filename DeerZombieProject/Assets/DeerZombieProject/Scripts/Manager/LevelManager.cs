@@ -4,6 +4,7 @@ using UnityEngine;
 
 using Photon.Pun;
 using UnityEngine.SceneManagement;
+using Photon.Realtime;
 
 namespace DeerZombieProject
 {
@@ -40,10 +41,15 @@ namespace DeerZombieProject
         [SerializeField]
         private int mainMenuSceneIndex;
 
+        [SerializeField]
+        private GameObject leaveGameMenu;
+
         private float remainingSpawnScore = 0;
         private int currentWave = 0;
         private List<PlayerCharacterControler> characters = new List<PlayerCharacterControler>();
         private List<PlayerCharacterControler> deadCharacters = new List<PlayerCharacterControler>();
+
+        
 
         public enum LevelState
         {
@@ -63,7 +69,19 @@ namespace DeerZombieProject
         #endregion
 
         #region Callbacks
+        public override void OnLeftRoom()
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
 
+            }
+            leaveGameMenu.SetActive(true);
+        }
+
+        public override void OnMasterClientSwitched(Player newMasterClient)
+        {
+            leaveGameMenu.SetActive(true);
+        }
         #endregion
 
         #region Constructors
@@ -94,7 +112,32 @@ namespace DeerZombieProject
         #endregion
 
         #region Public Methods
+        public void LeaveRoom()
+        {
+            if(PhotonNetwork.CurrentRoom != null)
+            {
+                PhotonNetwork.LeaveRoom();
+            }
 
+            SceneManager.LoadScene(mainMenuSceneIndex);
+        }
+
+        void OnApplicationQuit()
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                PhotonNetwork.CurrentRoom.IsOpen = false;
+
+                foreach(KeyValuePair<int, Player> player in PhotonNetwork.CurrentRoom.Players)
+                {
+                    if(player.Value != PhotonNetwork.LocalPlayer)
+                    {
+                        PhotonNetwork.CloseConnection(player.Value);
+                    }
+                }
+
+            }
+        }
         #endregion
 
         #region Internal Methods

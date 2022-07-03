@@ -120,6 +120,11 @@ namespace DeerZombieProject
             if (!PhotonNetwork.IsMasterClient)
                 return;
 
+            if (!isAlive)
+            {
+                return;
+            }
+
             currentHealth -= damage;
             Debug.Log("TookDamage");
 
