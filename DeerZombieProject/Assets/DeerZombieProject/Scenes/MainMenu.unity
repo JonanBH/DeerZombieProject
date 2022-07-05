@@ -1108,7 +1108,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!224 &787771384
 RectTransform:
   m_ObjectHideFlags: 0
@@ -1249,7 +1249,7 @@ MonoBehaviour:
   m_StartAxis: 0
   m_CellSize: {x: 512, y: 256}
   m_Spacing: {x: 50, y: 16}
-  m_Constraint: 0
+  m_Constraint: 1
   m_ConstraintCount: 2
 --- !u!1 &1032929061
 GameObject:
@@ -1299,6 +1299,9 @@ MonoBehaviour:
   adventureLobbyGameObject: {fileID: 787771383}
   gameRoomGameObject: {fileID: 950983810}
   roomHandler: {fileID: 950983812}
+  roomsParentRectTransform: {fileID: 992967446}
+  joinButtonPrefab: {fileID: 1644697978161790288, guid: 73d21d9fd3bf99a48b443a12966ba136,
+    type: 3}
 --- !u!1 &1139117832
 GameObject:
   m_ObjectHideFlags: 0
@@ -2735,6 +2738,8 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 2092921414}
+  - component: {fileID: 2092921416}
+  - component: {fileID: 2092921415}
   m_Layer: 5
   m_Name: RoomList
   m_TagString: Untagged
@@ -2763,6 +2768,49 @@ RectTransform:
   m_AnchoredPosition: {x: -81.83508, y: 0}
   m_SizeDelta: {x: 1280, y: 640}
   m_Pivot: {x: 1, y: 0.5}
+--- !u!114 &2092921415
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2092921413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 31a19414c41e5ae4aae2af33fee712f6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_ShowMaskGraphic: 1
+--- !u!114 &2092921416
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 2092921413}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1aa08ab6e0800fa44ae55d278d1423e3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  m_Content: {fileID: 992967446}
+  m_Horizontal: 0
+  m_Vertical: 1
+  m_MovementType: 1
+  m_Elasticity: 0.1
+  m_Inertia: 1
+  m_DecelerationRate: 0.135
+  m_ScrollSensitivity: 1
+  m_Viewport: {fileID: 0}
+  m_HorizontalScrollbar: {fileID: 0}
+  m_VerticalScrollbar: {fileID: 0}
+  m_HorizontalScrollbarVisibility: 0
+  m_VerticalScrollbarVisibility: 0
+  m_HorizontalScrollbarSpacing: 0
+  m_VerticalScrollbarSpacing: 0
+  m_OnValueChanged:
+    m_PersistentCalls:
+      m_Calls: []
 --- !u!1 &2121158851
 GameObject:
   m_ObjectHideFlags: 0

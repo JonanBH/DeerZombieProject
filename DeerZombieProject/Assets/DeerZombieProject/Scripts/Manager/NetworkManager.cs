@@ -70,6 +70,12 @@ namespace DeerZombieProject
                 OnKillsChanged?.Invoke((int)changedProps[CURRENT_KILLS_KEY.value]);
             }
         }
+
+        public override void OnConnectedToMaster()
+        {
+            TypedLobby typedLobby = new TypedLobby("defaultLobby", LobbyType.Default);
+            PhotonNetwork.JoinLobby(typedLobby);
+        }
         #endregion
 
         #region Constructors

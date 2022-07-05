@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 using Photon.Pun;
+using Photon.Realtime;
 
 namespace DeerZombieProject
 {
@@ -27,6 +28,12 @@ namespace DeerZombieProject
         private GameObject gameRoomGameObject;
         [SerializeField]
         private UIRoomHandler roomHandler;
+        [SerializeField]
+        private RectTransform roomsParentRectTransform;
+        [SerializeField]
+        private GameObject joinButtonPrefab;
+
+        private Dictionary<string, RoomInfo> roomsCache = new Dictionary<string, RoomInfo>();
         #endregion
 
         #region Events and Delegates
@@ -44,6 +51,12 @@ namespace DeerZombieProject
         {
             base.OnJoinedRoom();
             ChangeToGameRoom();
+        }
+
+        public override void OnRoomListUpdate(List<RoomInfo> roomList)
+        {
+            base.OnRoomListUpdate(roomList);
+            UpdateCachedRooms(roomList);
         }
 
         public override void OnLeftRoom()
@@ -118,7 +131,40 @@ namespace DeerZombieProject
         #endregion
 
         #region Private Methods
+        private void UpdateRooms()
+        {
+            int remainingRooms = roomsParentRectTransform.childCount;
+            while(remainingRooms > 0)
+            {
+                Destroy(roomsParentRectTransform.GetChild(remainingRooms - 1).gameObject);
+                remainingRooms--;
+            }
 
+            foreach(KeyValuePair<string, RoomInfo> room in roomsCache)
+            {
+                GameObject newItem = Instantiate(joinButtonPrefab);
+                newItem.GetComponent<UIJoinRoomBtn>().SetRoomData(room.Value.Name, room.Value.PlayerCount, room.Value.MaxPlayers);
+                newItem.GetComponent<RectTransform>().SetParent(roomsParentRectTransform);
+            }
+        }
+
+        private void UpdateCachedRooms(List<RoomInfo> roomList)
+        {
+            for (int i = 0; i < roomList.Count; i++)
+            {
+                RoomInfo info = roomList[i];
+                if (info.RemovedFromList)
+                {
+                    roomsCache.Remove(info.Name);
+                }
+                else
+                {
+                    roomsCache[info.Name] = info;
+                }
+            }
+
+            UpdateRooms();
+        }
         #endregion
 
         #region Nested Types
