@@ -38,7 +38,7 @@ namespace DeerZombieProject
         [SerializeField]
         private LayerMask enemyMask;
         [SerializeField]
-        private GameObject damageTarget;
+        private GameObject damageTarget = null;
 
         [SerializeField]
         private int maxHealth = 10;
@@ -47,16 +47,23 @@ namespace DeerZombieProject
         [SerializeField]
         private Animator animator;
 
+        [SerializeField]
+        private AudioSource shootAudioSource;
+
         private Vector3 moveVelocity = Vector3.zero;
         private Camera currentCamera;
         private int kills = 0;
         private int score = 0;
         private bool isAlive = true;
+        public bool IsAlive
+        {
+            get { return isAlive; }
+        }
         #endregion
 
         #region Events and Delegates
-        System.Action OnDeath;
-        System.Action OnRespawn;
+        public static System.Action<PlayerCharacterControler> OnDeath;
+        public static System.Action<PlayerCharacterControler> OnRespawn;
         #endregion
 
         #region Callbacks
@@ -81,6 +88,15 @@ namespace DeerZombieProject
         {
             if (!photonView.IsMine)
                 return;
+            if (!isAlive)
+                return;
+
+            if(damageTarget != null && damageTarget.GetComponent<BasicZombieControler>().IsAlive == false)
+            {
+                damageTarget = null;
+                SetIsAiming(false);
+            }
+
 
             GetInputs();
         }
@@ -89,13 +105,23 @@ namespace DeerZombieProject
         {
             if (!photonView.IsMine)
                 return;
+            if (!isAlive)
+                return;
+
             characterController.Move(moveVelocity * Time.fixedDeltaTime);
 
-            if(moveVelocity.normalized.magnitude > 0)
+            if (damageTarget == null)
             {
-                transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveVelocity.normalized), 0.7f);
+                if (moveVelocity.normalized.magnitude > 0)
+                {
+                    transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(moveVelocity.normalized), 0.7f);
+                }
+                return;
             }
-            
+
+            Vector3 direction = damageTarget.transform.position - transform.position;
+            transform.rotation = Quaternion.Slerp(transform.rotation, Quaternion.LookRotation(direction.normalized), 0.7f);
+
         }
 
         #endregion
@@ -123,7 +149,7 @@ namespace DeerZombieProject
                         damageTarget = null;
                         return;
                     }
-                    photonView.RPC(nameof(RPCDoDamage), RpcTarget.MasterClient);
+                    photonView.RPC(nameof(RPCDoDamage), RpcTarget.All);
                 }
             }
         }
@@ -137,8 +163,8 @@ namespace DeerZombieProject
             currentHealth -= (int)damage;
             if(currentHealth <= 0)
             {
-                OnDeath();
-
+                OnDeath?.Invoke(this);
+                photonView.RPC(nameof(RPCUpdateDied), RpcTarget.All, true);
             }
 
             UpdatePlayerStatus();
@@ -239,6 +265,7 @@ namespace DeerZombieProject
             }
 
             damageTarget = target.gameObject;
+            SetIsAiming(true);
             photonView.RPC(nameof(RPCSetTarget), RpcTarget.Others, target.gameObject.GetComponent<PhotonView>().ViewID, requestView);
         }
 
@@ -255,6 +282,7 @@ namespace DeerZombieProject
             if (target)
             {
                 damageTarget = target.gameObject;
+                SetIsAiming(true);
             }
         }
 
@@ -264,7 +292,10 @@ namespace DeerZombieProject
             if (damageTarget == null)
                 return;
 
-            damageTarget.GetComponent<IDamageable>().TakeDamage(1, gameObject);
+            if(PhotonNetwork.IsMasterClient)
+                damageTarget.GetComponent<IDamageable>().TakeDamage(1, gameObject);
+
+            shootAudioSource.Play();
         }
 
         [PunRPC]
@@ -272,14 +303,23 @@ namespace DeerZombieProject
         {
             isAlive = !value;
 
+            animator.ResetTrigger("T_Respawn");
+            animator.ResetTrigger("T_Died");
             if (isAlive)
             {
-                OnRespawn?.Invoke();
+                OnRespawn?.Invoke(this);
+                animator.SetTrigger("T_Respawn");
                 return;
             }
 
-            OnDeath?.Invoke();
+            OnDeath?.Invoke(this);
+            animator.SetTrigger("T_Died");
+        }
 
+        private void SetIsAiming(bool value)
+        {
+            int layerIndex = animator.GetLayerIndex("Aim");
+            animator.SetLayerWeight(layerIndex, value == true ? 1 : 0);
         }
         #endregion
 

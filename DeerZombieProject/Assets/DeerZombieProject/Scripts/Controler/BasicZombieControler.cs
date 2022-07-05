@@ -155,20 +155,33 @@ namespace DeerZombieProject
         private void HandleIdleState()
         {
             PlayerCharacterControler[] players = FindObjectsOfType<PlayerCharacterControler>();
+            List<PlayerCharacterControler> availablePlayers = new List<PlayerCharacterControler>();
 
             if (players.Length.Equals(0))
             {
                 return;
             }
 
-            targetPlayer = players[Random.Range(0, players.Length)];
-            ChangeState(ZombieStates.FOLLOWING);
+            foreach(PlayerCharacterControler player in players)
+            {
+                if (player.IsAlive)
+                {
+                    availablePlayers.Add(player);
+                }
+            }
+
+            if (availablePlayers.Count > 0)
+            {
+                targetPlayer = availablePlayers[Random.Range(0, availablePlayers.Count)];
+                ChangeState(ZombieStates.FOLLOWING);
+            }
         }
 
         private void HandleFollowingState()
         {
-            if(targetPlayer == null)
+            if(targetPlayer == null || targetPlayer.IsAlive == false)
             {
+                targetPlayer = null;
                 ChangeState(ZombieStates.IDLE);
                 return;
             }
@@ -229,7 +242,10 @@ namespace DeerZombieProject
 
                 case ZombieStates.ATTACKING:
                     animator.SetTrigger("Attack");
-                    targetPlayer.TakeDamage(1);
+                    if (targetPlayer != null)
+                    {
+                        targetPlayer.TakeDamage(1);
+                    }
                     timer = 2;
                     navAgent.SetDestination(transform.position);
                     break;
