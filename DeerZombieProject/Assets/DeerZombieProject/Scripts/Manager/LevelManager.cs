@@ -114,7 +114,7 @@ namespace DeerZombieProject
         #region Public Methods
         public void LeaveRoom()
         {
-            if(PhotonNetwork.CurrentRoom != null)
+            if(PhotonNetwork.CurrentRoom != null && PhotonNetwork.NetworkClientState != ClientState.Leaving)
             {
                 PhotonNetwork.LeaveRoom();
             }
