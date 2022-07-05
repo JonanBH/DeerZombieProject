@@ -5,6 +5,7 @@ using UnityEngine;
 using Photon.Pun;
 using UnityEngine.SceneManagement;
 using Photon.Realtime;
+using TMPro;
 
 namespace DeerZombieProject
 {
@@ -19,6 +20,9 @@ namespace DeerZombieProject
         #endregion
 
         #region Fields
+        [SerializeField]
+        private SString SCORE_KEY;
+
         [SerializeField]
         private List<EnemySpawnData> enemySpawnDataList;
         [SerializeField]
@@ -43,6 +47,24 @@ namespace DeerZombieProject
 
         [SerializeField]
         private GameObject leaveGameMenu;
+        [SerializeField]
+        private GameObject clientFailedMenu;
+        [SerializeField]
+        private GameObject serverFailedMenu;
+        [SerializeField]
+        private TMP_Text failedScoreTextClient;
+        [SerializeField]
+        private TMP_Text failedScoreTextServer;
+        [SerializeField]
+        private GameObject clientCompleteMenu;
+        [SerializeField]
+        private GameObject serverCompleteMenu;
+        [SerializeField]
+        private TMP_Text completeScoreTextClient;
+        [SerializeField]
+        private TMP_Text completeScoreTextServer;
+        [SerializeField]
+        private PhotonView photonView;
 
         private float remainingSpawnScore = 0;
         private int currentWave = 0;
@@ -81,6 +103,26 @@ namespace DeerZombieProject
         public override void OnMasterClientSwitched(Player newMasterClient)
         {
             leaveGameMenu.SetActive(true);
+        }
+
+        private void HandleOnPlayerDeath(PlayerCharacterControler player)
+        {
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            if (deadCharacters.Contains(player))
+            {
+                return;
+            }
+
+            deadCharacters.Add(player);
+
+            if(deadCharacters.Count == PhotonNetwork.CurrentRoom.PlayerCount)
+            {
+                photonView.RPC(nameof(RPCLevelFailed), RpcTarget.All);
+            }
         }
         #endregion
 
@@ -138,6 +180,14 @@ namespace DeerZombieProject
 
             }
         }
+
+        public void ReturnToLobby()
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                SceneManager.LoadScene(mainMenuSceneIndex);
+            }
+        }
         #endregion
 
         #region Internal Methods
@@ -186,7 +236,8 @@ namespace DeerZombieProject
                     StartCoroutine(nameof(HandleEndRound));
                     break;
                 case LevelState.FINISHED:
-                    SceneManager.LoadScene(mainMenuSceneIndex);
+                    //SceneManager.LoadScene(mainMenuSceneIndex);
+                    RPCLevelComplete();
                     break;
             }
 
@@ -249,6 +300,8 @@ namespace DeerZombieProject
             {
                 spawner.OnAllMinionsDefeated += CheckWaveFinished;
             }
+
+            PlayerCharacterControler.OnDeath += HandleOnPlayerDeath;
         }
 
         private void ReleaseCallbacks()
@@ -273,6 +326,34 @@ namespace DeerZombieProject
             } while (spawn.minSpawnWave > currentWave);
 
             return spawn;
+        }
+
+        [PunRPC]
+        private void RPCLevelFailed()
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                failedScoreTextServer.text = PhotonNetwork.LocalPlayer.CustomProperties[SCORE_KEY.value].ToString();
+                serverFailedMenu.SetActive(true);
+                return;
+            }
+
+            failedScoreTextClient.text = PhotonNetwork.LocalPlayer.CustomProperties[SCORE_KEY.value].ToString();
+            clientFailedMenu.SetActive(true);
+        }
+
+        [PunRPC]
+        private void RPCLevelComplete()
+        {
+            if (PhotonNetwork.IsMasterClient)
+            {
+                completeScoreTextServer.text = PhotonNetwork.LocalPlayer.CustomProperties[SCORE_KEY.value].ToString();
+                serverCompleteMenu.SetActive(true);
+                return;
+            }
+
+            completeScoreTextClient.text = PhotonNetwork.LocalPlayer.CustomProperties[SCORE_KEY.value].ToString();
+            clientCompleteMenu.SetActive(true);
         }
 
         private IEnumerator HandleEnemiesSpawning()
