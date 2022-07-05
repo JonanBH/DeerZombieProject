@@ -208,7 +208,7 @@ MonoBehaviour:
   maxHealth: 10
   currentHealth: 10
   animator: {fileID: 6853591878294785072}
-  shootAudioSource: {fileID: 0}
+  shootAudioSource: {fileID: 3659060264974326110}
 --- !u!95 &6853591878294785072
 Animator:
   serializedVersion: 3
