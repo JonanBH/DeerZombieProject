@@ -43,6 +43,8 @@ MonoBehaviour:
   - DoDamage
   - RPCSetTarget
   - RPCDoDamage
+  - RPCUpdateDied
+  - RPCDie
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

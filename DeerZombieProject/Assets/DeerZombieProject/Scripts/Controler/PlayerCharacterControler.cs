@@ -12,8 +12,10 @@ namespace DeerZombieProject
     public class PlayerCharacterControler : MonoBehaviour, IDamageable
     {
         #region Constant Fields
-        private const string CURRENT_HEALTH_KEY = "currentHealth";
-        private const string CURRENT_KILLS_KEY = "kills";
+        public SString CURRENT_HEALTH_KEY;
+        public SString MAX_HEALTH_KEY;
+        public SString CURRENT_KILLS_KEY;
+        public SString SCORE_KEY;
         #endregion
 
         #region Static Fields
@@ -36,19 +38,25 @@ namespace DeerZombieProject
         [SerializeField]
         private LayerMask enemyMask;
         [SerializeField]
-        private IDamageable damageTarget;
+        private GameObject damageTarget;
 
         [SerializeField]
-        private float maxHealth = 100;
+        private int maxHealth = 10;
         [SerializeField]
-        private float currentHealth;
+        private int currentHealth;
+        [SerializeField]
+        private Animator animator;
 
         private Vector3 moveVelocity = Vector3.zero;
         private Camera currentCamera;
+        private int kills = 0;
+        private int score = 0;
+        private bool isAlive = true;
         #endregion
 
         #region Events and Delegates
-
+        System.Action OnDeath;
+        System.Action OnRespawn;
         #endregion
 
         #region Callbacks
@@ -110,21 +118,54 @@ namespace DeerZombieProject
 
                 if (damageTarget != null)
                 {
+                    if(damageTarget.GetComponent<BasicZombieControler>().IsAlive == false)
+                    {
+                        damageTarget = null;
+                        return;
+                    }
                     photonView.RPC(nameof(RPCDoDamage), RpcTarget.MasterClient);
                 }
             }
         }
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(float damage, GameObject attacker = null)
         {
+            if (!PhotonNetwork.IsMasterClient)
+                return;
+
             Debug.Log("Player took damage");
-            currentHealth -= damage;
-            photonView.Owner.CustomProperties[CURRENT_HEALTH_KEY] = currentHealth;
+            currentHealth -= (int)damage;
+            if(currentHealth <= 0)
+            {
+                OnDeath();
+
+            }
+
+            UpdatePlayerStatus();
         }
 
         public Transform GetAimPosition()
         {
             return transform;
+        }
+
+        public void Respawn()
+        {
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            photonView.RPC(nameof(RPCUpdateDied), RpcTarget.All, false);
+        }
+
+        public void AddScore(int amount)
+        {
+            ExitGames.Client.Photon.Hashtable properties = new ExitGames.Client.Photon.Hashtable();
+
+            score += amount;
+            properties.Add(SCORE_KEY.value, score);
+            photonView.Owner.SetCustomProperties(properties);
         }
         #endregion
 
@@ -139,19 +180,9 @@ namespace DeerZombieProject
         #region Private Methods
         private void Init()
         {
-            Player myPlayer = PhotonNetwork.LocalPlayer;
+            if (!photonView.IsMine) return;
 
-            if (!myPlayer.CustomProperties.ContainsKey(CURRENT_HEALTH_KEY))
-            {
-                myPlayer.CustomProperties.Add(CURRENT_HEALTH_KEY, currentHealth);
-            }
-            if (!myPlayer.CustomProperties.ContainsKey(CURRENT_KILLS_KEY))
-            {
-                myPlayer.CustomProperties.Add(CURRENT_KILLS_KEY, 0);
-            }
-
-            myPlayer.CustomProperties[CURRENT_HEALTH_KEY] =  currentHealth;
-            myPlayer.CustomProperties[CURRENT_KILLS_KEY] = 0;
+            UpdatePlayerStatus();
         }
 
         private void GetInputs()
@@ -162,16 +193,29 @@ namespace DeerZombieProject
             if (moveInput.Equals(Vector2.zero) && moveVelocity.magnitude <= minSpeedToMove)
             {
                 moveVelocity = Vector3.zero;
-                return;
+            }
+            else{
+                moveVelocity = Vector3.Lerp(moveVelocity, moveDirection * maxSpeed, accelerationMod * Time.deltaTime);
             }
 
-            moveVelocity = Vector3.Lerp(moveVelocity, moveDirection * maxSpeed, accelerationMod * Time.deltaTime);
-
+            animator.SetBool("IsMoving", moveVelocity != Vector3.zero);
+            animator.SetBool("IsRunning", moveVelocity.magnitude > maxSpeed / 2);
         }
 
         private void FindTarget()
         {
             photonView.RPC(nameof(CmdFindTarget), RpcTarget.MasterClient, transform.position, 20f, photonView.ViewID);
+        }
+
+        private void UpdatePlayerStatus()
+        {
+            ExitGames.Client.Photon.Hashtable customProperties = new ExitGames.Client.Photon.Hashtable();
+            customProperties.Add(CURRENT_HEALTH_KEY.value, currentHealth);
+            customProperties.Add(MAX_HEALTH_KEY.value, maxHealth);
+            customProperties.Add(CURRENT_KILLS_KEY.value, kills);
+            customProperties.Add(SCORE_KEY.value, score);
+
+            photonView.Owner.SetCustomProperties(customProperties);
         }
 
         [PunRPC]
@@ -187,13 +231,14 @@ namespace DeerZombieProject
 
             foreach (Collider enemy in enemies)
             {
-                if(Vector3.Distance(enemy.transform.position, position) < Vector3.Distance(target.transform.position, position))
+                if(Vector3.Distance(enemy.transform.position, position) < Vector3.Distance(target.transform.position, position) &&
+                    enemy.gameObject.GetComponent<BasicZombieControler>().IsAlive)
                 {
                     target = enemy;
                 }
             }
 
-            damageTarget = target.gameObject.GetComponent<IDamageable>();
+            damageTarget = target.gameObject;
             photonView.RPC(nameof(RPCSetTarget), RpcTarget.Others, target.gameObject.GetComponent<PhotonView>().ViewID, requestView);
         }
 
@@ -209,17 +254,32 @@ namespace DeerZombieProject
 
             if (target)
             {
-                damageTarget = target.gameObject.GetComponent<IDamageable>();
+                damageTarget = target.gameObject;
             }
         }
 
         [PunRPC]
         private void RPCDoDamage()
         {
-            if (damageTarget is null)
+            if (damageTarget == null)
                 return;
 
-            damageTarget.TakeDamage(1);
+            damageTarget.GetComponent<IDamageable>().TakeDamage(1, gameObject);
+        }
+
+        [PunRPC]
+        private void RPCUpdateDied(bool value)
+        {
+            isAlive = !value;
+
+            if (isAlive)
+            {
+                OnRespawn?.Invoke();
+                return;
+            }
+
+            OnDeath?.Invoke();
+
         }
         #endregion
 

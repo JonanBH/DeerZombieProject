@@ -33,20 +33,35 @@ namespace DeerZombieProject
         private LayerMask targetLayers;
         [SerializeField]
         private float delayAfterAttack = 1;
-
+        [SerializeField]
+        private Animator animator;
+        [SerializeField]
+        private int scoreValue = 10;
         private enum ZombieStates
         {
-            IDLE, FOLLOWING, ATTACKING, RECOVER
+            IDLE, FOLLOWING, ATTACKING, RECOVER, DEAD
         }
 
         private float maxHealth = 10;
         private float currentHealth = 10;
         private ZombieStates currentState = ZombieStates.IDLE;
-        private float recoverTimer = 0;
+        private float timer = 0;
+        private bool isAlive = true;
+        public bool IsAlive
+        {
+            get
+            {
+                return isAlive;
+            }
+            private set
+            {
+                isAlive = value;
+            }
+        }
         #endregion
 
         #region Events and Delegates
-
+        public System.Action<BasicZombieControler> OnDeath;
         #endregion
 
         #region Callbacks
@@ -59,12 +74,9 @@ namespace DeerZombieProject
 
         #region LifeCycle Methods
 
-        private void Start()
+        void Start()
         {
-            if (!PhotonNetwork.IsMasterClient)
-            {
-                navAgent.enabled = false;
-            }
+            currentHealth = maxHealth;
         }
 
         // Update is called once per frame
@@ -83,8 +95,14 @@ namespace DeerZombieProject
                 case ZombieStates.FOLLOWING:
                     HandleFollowingState();
                     break;
+                case ZombieStates.ATTACKING:
+                    HandleAttackingState();
+                    break;
                 case ZombieStates.RECOVER:
                     HandleRecoverState();
+                    break;
+                case ZombieStates.DEAD:
+                    HandleDeathState();
                     break;
             }
         }
@@ -97,10 +115,15 @@ namespace DeerZombieProject
             return aimPosition;
         }
 
-        public void TakeDamage(float damage)
+        public void TakeDamage(float damage, GameObject attacker)
         {
             if (!PhotonNetwork.IsMasterClient)
                 return;
+
+            if (!isAlive)
+            {
+                return;
+            }
 
             currentHealth -= damage;
             Debug.Log("TookDamage");
@@ -108,7 +131,9 @@ namespace DeerZombieProject
             if(currentHealth <= 0)
             {
                 Debug.Log("died");
-                PhotonNetwork.Destroy(gameObject);
+                attacker.GetComponent<PlayerCharacterControler>().AddScore(scoreValue);
+                //PhotonNetwork.Destroy(gameObject);
+                Die();
             }
         }
         #endregion
@@ -155,34 +180,84 @@ namespace DeerZombieProject
                 ChangeState(ZombieStates.ATTACKING);
             }
         }
+        private void HandleAttackingState()
+        {
+            timer -= Time.deltaTime;
+            if (timer <= 0)
+            {
+                ChangeState(ZombieStates.RECOVER);
+            }
+        }
 
         private void HandleRecoverState()
         {
-            recoverTimer -= Time.deltaTime;
-            if(recoverTimer <= 0)
+            timer -= Time.deltaTime;
+            if(timer <= 0)
             {
                 ChangeState(ZombieStates.FOLLOWING);
             }
         }
 
+        private void HandleDeathState()
+        {
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
+            timer -= Time.deltaTime;
+            if(timer < 0)
+            {
+                PhotonNetwork.Destroy(gameObject);
+            }
+        }
+
         private void ChangeState(ZombieStates newState)
         {
+            if (!PhotonNetwork.IsMasterClient)
+            {
+                return;
+            }
+
             currentState = newState;
 
             switch (currentState)
             {
+                case ZombieStates.FOLLOWING:
+                    animator.SetBool("IsMoving", true);
+                    break;
+
                 case ZombieStates.ATTACKING:
+                    animator.SetTrigger("Attack");
                     targetPlayer.TakeDamage(1);
+                    timer = 2;
                     navAgent.SetDestination(transform.position);
-                    ChangeState(ZombieStates.RECOVER);
                     break;
                 case ZombieStates.RECOVER:
-                    recoverTimer = delayAfterAttack;
+                    timer = delayAfterAttack;
+                    animator.SetBool("IsMoving", false);
+                    break;
+                case ZombieStates.DEAD:
+                    timer = 5;
+                    animator.SetTrigger("Died");
+                    navAgent.SetDestination(transform.position);
                     break;
             }
         }
 
+        private void Die()
+        {
+            ChangeState(ZombieStates.DEAD);
+            OnDeath?.Invoke(this);
 
+            GetComponent<PhotonView>().RPC(nameof(RPCDie), RpcTarget.All);
+        }
+
+        [PunRPC]
+        private void RPCDie()
+        {
+            IsAlive = false;
+        }
         private void OnDrawGizmosSelected()
         {
             Gizmos.color = Color.blue;

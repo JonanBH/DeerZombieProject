@@ -20,14 +20,35 @@ namespace DeerZombieProject
         private GameObject enemyPrefab;
         [SerializeField]
         private bool spawnOnStart;
+        [SerializeField]
+        private LevelManager levelManager;
+        [SerializeField]
+        private List<BasicZombieControler> spawnedEnemies = new List<BasicZombieControler>();
+
+        public bool HasMinions
+        {
+            get
+            {
+                return spawnedEnemies.Count > 0;
+            }
+        }
+
         #endregion
 
         #region Events and Delegates
-
+        public System.Action OnAllMinionsDefeated;
         #endregion
 
         #region Callbacks
+        private void HandleOnEnemyDeath(BasicZombieControler enemy)
+        {
+            spawnedEnemies.Remove(enemy);
 
+            if(spawnedEnemies.Count == 0)
+            {
+                OnAllMinionsDefeated.Invoke();
+            }
+        }
         #endregion
 
         #region Constructors
@@ -53,7 +74,11 @@ namespace DeerZombieProject
             if (!PhotonNetwork.IsMasterClient)
                 return;
 
-            PhotonNetwork.Instantiate(enemyPrefab.name, transform.position, Quaternion.identity);
+            GameObject enemy = PhotonNetwork.Instantiate(enemyPrefab.name, transform.position, Quaternion.identity);
+            BasicZombieControler enemyControler = enemy.GetComponent<BasicZombieControler>();
+
+            enemyControler.OnDeath += HandleOnEnemyDeath;
+            spawnedEnemies.Add(enemyControler);
         }
 
         public void SpawnEnemy(GameObject prefab)
@@ -61,7 +86,11 @@ namespace DeerZombieProject
             if (!PhotonNetwork.IsMasterClient)
                 return;
 
-            PhotonNetwork.Instantiate(enemyPrefab.name, transform.position, Quaternion.identity);
+            GameObject enemy = PhotonNetwork.Instantiate(enemyPrefab.name, transform.position, Quaternion.identity);
+            BasicZombieControler enemyControler = enemy.GetComponent<BasicZombieControler>();
+
+            enemyControler.OnDeath += HandleOnEnemyDeath;
+            spawnedEnemies.Add(enemyControler);
         }
         #endregion
 

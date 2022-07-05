@@ -43,3 +43,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2f0985b36cdb9734389cae7e5d20e8f2, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  CURRENT_HEALTH_KEY: {fileID: 11400000, guid: 23a79fde6d042c44f9c5dbf765e8105a, type: 2}
+  MAX_HEALTH_KEY: {fileID: 11400000, guid: 1bec245d6aafb144684257d662931922, type: 2}
+  CURRENT_KILLS_KEY: {fileID: 11400000, guid: 7ff6862b34d327449ab97665800c88b0, type: 2}
+  CURRENT_SCORE_KEY: {fileID: 11400000, guid: 6522779afb0155240bfd6e8a40e7a70a, type: 2}
